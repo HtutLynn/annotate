@@ -225,7 +225,6 @@ class CascadePipeline(object):
             infer_time0 = time.time()
             preds = self.cascademodel.infer(frame, cls=0)
             infer_time1 = time.time()
-            print("Total time : {}".format(infer_time1 - infer_time0))
 
             # track with deepsort tracker.
             track_time0 = time.time()

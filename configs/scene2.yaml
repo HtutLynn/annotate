@@ -1,0 +1,9 @@
+Door0:
+  firstcheckpoint : [554, 668, 695, 796]
+  secondcheckpoint: [366, 652, 507, 780]
+Door1:
+  firstcheckpoint : [913, 218, 975, 280]
+  secondcheckpoint: [822, 204, 886, 279]
+Door2:
+  firstcheckpoint : [850, 300, 906, 362]
+  secondcheckpoint: [770, 300, 826, 362]

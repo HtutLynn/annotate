@@ -947,9 +947,7 @@ class CascadeModel(object):
 
             # Set host input to the image. The do_inference() function
             # will copy the input to the GPU before executing.
-            t0 = time.time()
             img_reized = self.preprocess(img, (self.input_size, self.input_size))
-            t1 = time.time()
 
             self.detect_inputs[0].host = np.ascontiguousarray(img_reized)
 
@@ -960,7 +958,6 @@ class CascadeModel(object):
                 outputs  = self.detect_outputs,
                 stream   = self.detect_stream
             )
-            t2 = time.time()
 
             # Before doing post-processing, we need to reshape the outputs
             # as do_inference() will give us flat arrays.
@@ -972,11 +969,6 @@ class CascadeModel(object):
             # and get the bounding box details of detected objects
             boxes, classes, scores = self.postprocessor.process(
                 trt_outputs, shape_orig_WH, self.conf_thres)
-            t3 = time.time()
-
-            print("Preprocess time  : {}".format(t1 - t0))
-            print("Infer time       : {}".format(t2 - t1))
-            print("Postprocess time : {}".format(t3 - t2))
 
             if boxes is None:
                 return np.empty((0, 4), dtype=np.float32), np.array([]), np.array([])
@@ -988,9 +980,7 @@ class CascadeModel(object):
                 return boxes, scores, classes
 
         elif self.model == "efficientdet":
-            t0 = time.time()
             img_reized, metas = self.preprocess(img, (self.input_size, self.input_size))
-            t1 = time.time()
 
             self.detect_inputs[0].host = np.ascontiguousarray(img_reized)
 
@@ -1001,18 +991,12 @@ class CascadeModel(object):
                 outputs  = self.detect_outputs,
                 stream   = self.detect_stream
             )
-            t2 = time.time()
 
             classification = np.reshape(trt_outputs[0], (self.output_size, self.num_classes))
             boxes          = np.reshape(trt_outputs[1], (self.output_size, 4))
 
             pred_boxes, pred_scores, pred_classes = self.postprocess(boxes=boxes, classification=classification,
                                                                     metas=metas, cls=cls)
-            t3 = time.time()
-
-            print("Preprocess time  : {}".format(t1 - t0))
-            print("Infer time       : {}".format(t2 - t1))
-            print("Postprocess time : {}".format(t3 - t2))
 
             if pred_boxes is None:
                 return np.empty((0, 4), dtype=np.float32), np.array([]), np.array([])

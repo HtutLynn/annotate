@@ -262,7 +262,6 @@ def track_and_display(condition, cfg, input_size, name):
     input_size = input_size
     blur       = cfg.blur
     record     = cfg.record
-    display    = cfg.display
 
     # build deepsortcount tracker
     # fristly build doors
@@ -321,6 +320,7 @@ def main():
 
     # parse arguments
     args = parse_args()
+    print(args)
     video = args.video
 
     # set cv2 window
@@ -336,7 +336,7 @@ def main():
     condition  = threading.Condition()
     trt_thread = CascadeTrtThread(condition, args, cam)
     trt_thread.start()
-    track_and_display(condition, args, input_size)
+    track_and_display(condition, args, input_size, WINDOW_NAME)
     trt_thread.stop()
 
     cam.release()

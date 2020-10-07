@@ -34,7 +34,6 @@ def blur_bboxes(image, bboxes, blur=None):
             for box in xywh_boxes:
                 # Grab ROI with Numpy slicing and blur
                 x, y, w, h = box[:4].astype(np.int)
-                print(x, y, w, h)
                 roi = image[y:y+h, x:x+w]
                 blurred_roi = cv2.blur(roi, (51, 51), 0)
                 image[y:y+h, x:x+w] = blurred_roi
