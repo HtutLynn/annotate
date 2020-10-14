@@ -1,4 +1,5 @@
 from os import pread
+from numpy.core.defchararray import rsplit
 from numpy.lib.shape_base import expand_dims
 import onnx
 import onnxruntime
@@ -7,9 +8,9 @@ import cv2
 import sys
 import numpy as np
 
-# import custom libraries
 from digits.preprocessing import preprocess
-from model import Net
+# import Net
+from digits.shallow_model import Net
 
 def transform_to_onnx(weight_file, batch_size, IN_IMAGE_H, IN_IMAGE_W):
     """
@@ -28,11 +29,11 @@ def transform_to_onnx(weight_file, batch_size, IN_IMAGE_H, IN_IMAGE_W):
     """
 
     model = Net()
-    model = torch.load(weight_file)
+    model.load_state_dict(torch.load(weight_file, map_location=torch.device('cpu')))
     model.cuda()
 
     # construct dummy data with static batch size
-    x = torch.randn((batch_size, 1, IN_IMAGE_H, IN_IMAGE_W), requires_grad=True).cuda()
+    x = torch.randn((batch_size, 3, IN_IMAGE_H, IN_IMAGE_W), requires_grad=True).cuda()
 
     # file name
     onnx_file_name = "digits_{}.onnx".format(batch_size)
@@ -60,15 +61,16 @@ def main(weight_file, image_path, batch_size, IN_IMAGE_H, IN_IMAGE_W):
     # do test inference
     session = onnxruntime.InferenceSession(onnx_file_name)
     date_time_list = preprocess(image_path)
-    batch_image = np.zeros((len(date_time_list), 1 , IN_IMAGE_H, IN_IMAGE_W))
+    batch_image = np.zeros((len(date_time_list), 3 , IN_IMAGE_H, IN_IMAGE_W))
     for idx, img in enumerate(date_time_list):
-        batch_image[idx] = date_time_list[idx].astype(np.float32)
-
+        img = img.transpose((2, 0, 1)).astype(np.float32)
+        batch_image[idx] = img
     print(batch_image.shape)
 
     input_name = session.get_inputs()[0].name
     result = session.run(None, {input_name : batch_image.astype(np.float32)})
     result = result[0]
+    result = np.argmax(result, axis=1)
     print(result.shape)
 
     # Date in mm-dd-yyyy
@@ -76,6 +78,7 @@ def main(weight_file, image_path, batch_size, IN_IMAGE_H, IN_IMAGE_W):
     
     # Time in hh:mm:ss
     time = str(result[8]) + str(result[9]) + ":" + str(result[10]) + str(result[11]) + ":" + str(result[12]) + str(result[13]) 
+    print("Date : {}\tTime : {}".format(date, time))
 
 if __name__ == "__main__":
     print("Converting to onnx and running demo....")
@@ -92,4 +95,3 @@ if __name__ == "__main__":
 
     else:
         print("python convert_onnx.py <weight_file> <image_path> <batch_size> <IN_IMAGE_H> <IN_IMAGE_W>")
-        # python convert_onnx_digits.py checkpoints/my_model_KLDiv_linear.pth digits.png 14 28 28

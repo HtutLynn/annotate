@@ -29,8 +29,7 @@ def _preprocess(image, width, height, interpolation=None):
     """
     resized_image = cv2.resize(image, (height, width))
     preprocessed_image = (resized_image/255.0 - 0.1307) / 0.3081
-    print(preprocessed_image.shape)
-    # preprocessed_image = preprocessed_image.transpose((2, 0, 1)).astype(np.float32)
+    preprocessed_image = preprocessed_image.transpose((2, 0, 1)).astype(np.float32)
     
     return preprocessed_image
 
@@ -179,24 +178,24 @@ class DigitRecognizer(object):
         """
         assert isinstance(img, np.ndarray), "Given image is not numpy array!"
 
-        grayscale_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        batch_img = np.zeros((14, 3, self.input_size[0], self.input_size[1]), dtype=np.float32)
 
-        batch_img = np.zeros((14, 1, self.input_size[0], self.input_size[1]), dtype=np.float32)
-
-        batch_img[0] = _preprocess(grayscale_img[56:97, 43:72].copy(), width=self.input_size[1], height=self.input_size[0])
-        batch_img[1] = _preprocess(grayscale_img[56:97, 71:95].copy(), width=self.input_size[1], height=self.input_size[0])
-        batch_img[2] = _preprocess(grayscale_img[56:97, 120:143].copy(), width=self.input_size[1], height=self.input_size[0])
-        batch_img[3] = _preprocess(grayscale_img[56:97, 141:167].copy(), width=self.input_size[1], height=self.input_size[0])
-        batch_img[4] = _preprocess(grayscale_img[56:97, 191:215].copy(), width=self.input_size[1], height=self.input_size[0])
-        batch_img[5] = _preprocess(grayscale_img[56:97, 214:240].copy(), width=self.input_size[1], height=self.input_size[0])
-        batch_img[6] = _preprocess(grayscale_img[56:97, 238:264].copy(), width=self.input_size[1], height=self.input_size[0])
-        batch_img[7] = _preprocess(grayscale_img[56:97, 262:289].copy(), width=self.input_size[1], height=self.input_size[0])
-        batch_img[8] = _preprocess(grayscale_img[56:97, 405:434].copy(), width=self.input_size[1], height=self.input_size[0])
-        batch_img[9] = _preprocess(grayscale_img[56:97, 430:458].copy(), width=self.input_size[1], height=self.input_size[0])
-        batch_img[10] = _preprocess(grayscale_img[56:97, 476:504].copy(), width=self.input_size[1], height=self.input_size[0])
-        batch_img[11] = _preprocess(grayscale_img[56:97, 502:529].copy(), width=self.input_size[1], height=self.input_size[0])
-        batch_img[12] = _preprocess(grayscale_img[56:97, 548:576].copy(), width=self.input_size[1], height=self.input_size[0])
-        batch_img[13] = _preprocess(grayscale_img[56:97, 573:603].copy(), width=self.input_size[1], height=self.input_size[0])
+        batch_img[0] = _preprocess(img[56:97, 43:72].copy(), width=self.input_size[1], height=self.input_size[0])
+        batch_img[1] = _preprocess(img[56:97, 71:95].copy(), width=self.input_size[1], height=self.input_size[0])
+        batch_img[2] = _preprocess(img[56:97, 120:143].copy(), width=self.input_size[1], height=self.input_size[0])
+        batch_img[3] = _preprocess(img[56:97, 141:167].copy(), width=self.input_size[1], height=self.input_size[0])
+        # cv2.imwrite("Day2.jpg", grayscale_img[56:97, 141:167].copy())
+        batch_img[4] = _preprocess(img[56:97, 191:215].copy(), width=self.input_size[1], height=self.input_size[0])
+        batch_img[5] = _preprocess(img[56:97, 214:240].copy(), width=self.input_size[1], height=self.input_size[0])
+        batch_img[6] = _preprocess(img[56:97, 238:264].copy(), width=self.input_size[1], height=self.input_size[0])
+        batch_img[7] = _preprocess(img[56:97, 262:289].copy(), width=self.input_size[1], height=self.input_size[0])
+        batch_img[8] = _preprocess(img[56:97, 405:434].copy(), width=self.input_size[1], height=self.input_size[0])
+        batch_img[9] = _preprocess(img[56:97, 430:458].copy(), width=self.input_size[1], height=self.input_size[0])
+        batch_img[10] = _preprocess(img[56:97, 476:504].copy(), width=self.input_size[1], height=self.input_size[0])
+        batch_img[11] = _preprocess(img[56:97, 502:529].copy(), width=self.input_size[1], height=self.input_size[0])
+        batch_img[12] = _preprocess(img[56:97, 548:576].copy(), width=self.input_size[1], height=self.input_size[0])
+        batch_img[13] = _preprocess(img[56:97, 573:603].copy(), width=self.input_size[1], height=self.input_size[0])
+        # cv2.imwrite("last.jpg", grayscale_img[56:97, 573:603].copy())
 
         # Set host input to the image. The do_inference() function
         # will copy the input to the GPU before executing.
@@ -209,19 +208,31 @@ class DigitRecognizer(object):
             stream=self.stream
         )
 
-        print(trt_outputs[0].shape)
         outputs = np.reshape(trt_outputs[0], (14, 10))
-        print(outputs.shape)
         preds = np.argmax(outputs, axis=1)
-        print(len(preds))
 
         # Date in mm-dd-yyyy
         date = str(preds[0]) + str(preds[1]) + "-" + str(preds[2]) + str(preds[3]) + "-" + str(preds[4]) + str(preds[5]) + str(preds[6]) + str(preds[7])
         # Time in hh:mm:ss
         time = str(preds[8]) + str(preds[9]) + ":" + str(preds[10]) + str(preds[11]) + ":" + str(preds[12]) + str(preds[13]) 
-        print("Date : {}\tTime : {}".format(date, time))
+
+        return date, time
 
 if __name__ == "__main__":
     image = cv2.imread("sample/digits.png")
     model = DigitRecognizer(engine_path="digits.trt", input_size=(28, 28), num_classes=10)
-    model.classify(img=image)
+
+
+    f_date, f_time = model.classify(img=image)
+    print(f_date)
+    print(f_time)
+
+    t0 = time.time()
+    for _ in range(30):
+        _, _ = model.classify(image)
+
+    t1 = time.time()
+
+    print("one frame inference time : {}".format((t1 - t0)/ 30))
+    FPS = 1/((t1 - t0) / 30)
+    print("FPS : {}".format(FPS))

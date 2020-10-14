@@ -71,7 +71,7 @@ class DigitsPreprocess(object):
         """
         resized_image = cv2.resize(digit_crop, (self.height, self.width))
         preprocessed_image = (resized_image/255.0 - 0.1307) / 0.3081
-        # preprocessed_image = preprocessed_image.transpose((2, 0, 1)).astype(np.float32)
+        preprocessed_image = preprocessed_image.transpose((2, 0, 1)).astype(np.float32)
         
         return preprocessed_image
 
@@ -86,25 +86,22 @@ class DigitsPreprocess(object):
                 Image numpy array, parsed from cctv video data
         """
 
-        # convert BGR image to grayscale image
-        grayscale_img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        batch_img = np.zeros((14, 3, self.height, self.width), dtype=np.float32)
 
-        batch_img = np.zeros((14, 1, self.height, self.width), dtype=np.float32)
-
-        batch_img[0] = self._preprocess_digit_crop(grayscale_img[56:97, 43:72].copy())
-        batch_img[1] = self._preprocess_digit_crop(grayscale_img[56:97, 71:95].copy())
-        batch_img[2] = self._preprocess_digit_crop(grayscale_img[56:97, 120:143].copy())
-        batch_img[3] = self._preprocess_digit_crop(grayscale_img[56:97, 141:167].copy())
-        batch_img[4] = self._preprocess_digit_crop(grayscale_img[56:97, 191:215].copy())
-        batch_img[5] = self._preprocess_digit_crop(grayscale_img[56:97, 214:240].copy())
-        batch_img[6] = self._preprocess_digit_crop(grayscale_img[56:97, 238:264].copy())
-        batch_img[7] = self._preprocess_digit_crop(grayscale_img[56:97, 262:289].copy())
-        batch_img[8] = self._preprocess_digit_crop(grayscale_img[56:97, 405:434].copy())
-        batch_img[9] = self._preprocess_digit_crop(grayscale_img[56:97, 430:458].copy())
-        batch_img[10] = self._preprocess_digit_crop(grayscale_img[56:97, 476:504].copy())
-        batch_img[11] = self._preprocess_digit_crop(grayscale_img[56:97, 502:529].copy())
-        batch_img[12] = self._preprocess_digit_crop(grayscale_img[56:97, 548:576].copy())
-        batch_img[13] = self._preprocess_digit_crop(grayscale_img[56:97, 573:603].copy())
+        batch_img[0] = self._preprocess_digit_crop(img[56:97, 43:72, :].copy())
+        batch_img[1] = self._preprocess_digit_crop(img[56:97, 71:95, :].copy())
+        batch_img[2] = self._preprocess_digit_crop(img[56:97, 120:143, :].copy())
+        batch_img[3] = self._preprocess_digit_crop(img[56:97, 141:167, :].copy())
+        batch_img[4] = self._preprocess_digit_crop(img[56:97, 191:215, :].copy())
+        batch_img[5] = self._preprocess_digit_crop(img[56:97, 214:240, :].copy())
+        batch_img[6] = self._preprocess_digit_crop(img[56:97, 238:264, :].copy())
+        batch_img[7] = self._preprocess_digit_crop(img[56:97, 262:289, :].copy())
+        batch_img[8] = self._preprocess_digit_crop(img[56:97, 405:434, :].copy())
+        batch_img[9] = self._preprocess_digit_crop(img[56:97, 430:458, :].copy())
+        batch_img[10] = self._preprocess_digit_crop(img[56:97, 476:504, :].copy())
+        batch_img[11] = self._preprocess_digit_crop(img[56:97, 502:529, :].copy())
+        batch_img[12] = self._preprocess_digit_crop(img[56:97, 548:576, :].copy())
+        batch_img[13] = self._preprocess_digit_crop(img[56:97, 573:603, :].copy())
 
         return batch_img
 
