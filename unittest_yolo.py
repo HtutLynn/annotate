@@ -7,7 +7,7 @@ from yolo import TrtYOLOv4
 
 model = TrtYOLOv4(engine_path="trt/yolov4-416.trt", input_shape=(416, 416), nms_thres=0.5, conf_thres=0.5)
 
-image = cv2.imread("221.jpg")
+image = cv2.imread("sample/221.jpg")
 
 # test run
 _ = model.detect(img=image)

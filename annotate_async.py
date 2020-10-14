@@ -1,12 +1,14 @@
-"""cascade_trt_cvpipeline_async.py
+"""annotate_async.py
 
-This is the 'async' version of cascade_trt_cvpipeline.py. It creates
-dedicated child thrad for fetching camera input and do inferencing
+This is the 'async' version of annotate.py. It creates
+dedicated child thread for fetching camera input and do inferencing
 with the TensorRT optimized Cascade model/engine, and another child thread
 for performing tracking with DeepSORT tracker, while using the main
 thread for drawing detection results and displaying video. Ideally,
 the 3 threads work in a pipeline fashion so overall throughput (FPS)
-would be improved comparing to the non-async version.
+would be improved comparing to the non-async version. Another TensorRT
+model, digits-recognizers is used to extract timestamp information
+from the parsed cctv video data.
 """
 
 # import tensorrt related libraries
@@ -16,6 +18,7 @@ import tensorrt as trt
 # import system libraries
 import os
 import cv2
+import csv
 import time
 import argparse
 import threading
@@ -26,7 +29,7 @@ from utils.blur import blur_bboxes
 from utils.yamlparser import YamlParser
 
 # import core components
-from cascade import CascadeModel
+from annotate_cascade import CascadeModel
 from deepsortcount.count.door import DoorInfo
 from deepsortcount.deep_sort_count import DeepSortCount
 
@@ -36,6 +39,7 @@ def parse_args():
     parser.add_argument("--model", type=str, default="efficientdet")
     parser.add_argument("--detect_engine", type=str, default="trt/efficientdet-d1.trt")
     parser.add_argument("--featext_engine", type=str, default="trt/extractor.trt")
+    parser.add_argument("--digits_engine", type=str, default="trt/digits.trt")
     parser.add_argument("--conf_threshold", type=float, default=0.5)
     parser.add_argument("--nms_threshold", type=float, default=0.5)
     parser.add_argument("--config_doors", type=str, default="./configs/scene2.yaml")
@@ -44,6 +48,7 @@ def parse_args():
     parser.add_argument("--save_path", type=str, default="./outputs/")
     parser.add_argument("--blur", type=bool, default=False)
     parser.add_argument("--record", type=bool, default=True)
+    parser.add_argument("--annotate", type=bool, default=True)
     return parser.parse_args()
 
 def build_deepsortcount_tracker(cfg, doors):
@@ -176,6 +181,7 @@ class CascadeTrtThread(threading.Thread):
         self.model               = cfg.model
         self.detect_engine_path  = cfg.detect_engine
         self.featext_engine_path = cfg.featext_engine
+        self.digits_engine_path  = cfg.digits_engine
 
         self.conf_threshold      = cfg.conf_threshold
         self.nms_threshold       = cfg.nms_threshold
@@ -201,6 +207,7 @@ class CascadeTrtThread(threading.Thread):
 
         # build the cascade TensorRT model engine
         self.cascademodel = CascadeModel(model=self.model, detect_engine_path=self.detect_engine_path, featext_engine_path=self.featext_engine_path,
+                                         digits_engine_path=self.digits_engine_path,
                                          nms_thres=self.nms_threshold, conf_thres=self.conf_threshold)
 
         
@@ -242,7 +249,7 @@ def _set_window(video_path,  window_name, title):
 
     return (im_width, im_height)
 
-def track_and_display(condition, cfg, input_size, name):
+def track_annotate_and_display(condition, cfg, input_size, name):
     """
     1. Track and count humans with DeepSort Tracker.
     2. Display the result
@@ -262,6 +269,7 @@ def track_and_display(condition, cfg, input_size, name):
     input_size = input_size
     blur       = cfg.blur
     record     = cfg.record
+    annotate_flag   = cfg.annotate
 
     # build deepsortcount tracker
     # fristly build doors
@@ -272,6 +280,8 @@ def track_and_display(condition, cfg, input_size, name):
     # setup parameters for deepsort tracking algorithm
     track_cfg = YamlParser(cfg.config_deepsort)
     deepsortcount = build_deepsortcount_tracker(cfg=track_cfg, doors=doors)
+
+    annotate_data = []
 
 
     # writer
@@ -292,6 +302,16 @@ def track_and_display(condition, cfg, input_size, name):
 
         if flag:
             tracks, stats = deepsortcount.update(output=results, img_shape=input_size)
+            frame_date          = results['date']
+            frame_time          = results['time']
+
+            if annotate_flag:
+                annotation = [frame_date, frame_time]
+                for door_no in range(len(doors)):
+                    annotation.append(stats.Doors[door_no])
+
+                # print(annotate_data)
+                annotate_data.append(annotation)
 
             if record:
                 drawn_image = visualize(image=frame, preds=results, tracks=tracks,
@@ -305,6 +325,12 @@ def track_and_display(condition, cfg, input_size, name):
             tic = toc
         else:
             break
+        
+    if annotate_flag:
+        with open("annotation/mintel_occupancy.csv", "w", encoding="utf=8") as WR:
+            writer = csv.writer(WR)
+            for row in annotate_data:
+                writer.writerow(row) 
 
 def main():
     """Main Thread
@@ -336,7 +362,7 @@ def main():
     condition  = threading.Condition()
     trt_thread = CascadeTrtThread(condition, args, cam)
     trt_thread.start()
-    track_and_display(condition, args, input_size, WINDOW_NAME)
+    track_annotate_and_display(condition, args, input_size, WINDOW_NAME)
     trt_thread.stop()
 
     cam.release()

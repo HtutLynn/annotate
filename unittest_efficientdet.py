@@ -8,7 +8,7 @@ from efficientdet import EfficientDetModel
 model = EfficientDetModel(engine_path='checkpoints/efficientdet-b1.trt', nms_thres=0.5,
                           conf_thres=0.3)
 
-image = cv2.imread("221.jpg")
+image = cv2.imread("sample/221.jpg")
 
 # test run
 _ = model.detect(image, cls=0)

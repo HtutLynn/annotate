@@ -44,7 +44,6 @@ def parse_args():
     parser.add_argument("--save_path", type=str, default="./outputs/")
     parser.add_argument("--blur", type=bool, default=False)
     parser.add_argument("--record", type=bool, default=True)
-    parser.add_argument("--display", type=bool, default=True)
     return parser.parse_args()
 
 def build_deepsortcount_tracker(cfg, doors):
@@ -240,9 +239,6 @@ def _set_window(video_path,  window_name, title):
     vc.open(video_path)
     im_width = int(vc.get(cv2.CAP_PROP_FRAME_WIDTH))
     im_height = int(vc.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
-    cv2.resizeWindow(window_name, im_height, im_height)
-    cv2.setWindowTitle(window_name, title)
 
     return (im_width, im_height)
 
@@ -266,7 +262,6 @@ def track_and_display(condition, cfg, input_size, name):
     input_size = input_size
     blur       = cfg.blur
     record     = cfg.record
-    display    = cfg.display
 
     # build deepsortcount tracker
     # fristly build doors
@@ -287,8 +282,6 @@ def track_and_display(condition, cfg, input_size, name):
     fps = 0.0
     tic = time.time()
     while True:
-        if cv2.getWindowProperty(name, 0) < 0:
-            break
         with condition:
             # Wait for the next frame and detection result.  When
             # getting the signal from the child thread, save the
@@ -300,21 +293,16 @@ def track_and_display(condition, cfg, input_size, name):
         if flag:
             tracks, stats = deepsortcount.update(output=results, img_shape=input_size)
 
-            if display:
+            if record:
                 drawn_image = visualize(image=frame, preds=results, tracks=tracks,
                                     doors=doors, stats=stats, blur=cfg.blur, fps=fps)
-                cv2.imshow(name, drawn_image)
-                if record:
-                    writer.write(drawn_image)
+                writer.write(drawn_image)
 
             toc = time.time()
             curr_fps = 1.0 / (toc - tic)
             # calculate an exponentially decaying average of fps number
             fps = curr_fps if fps == 0.0 else (fps*0.95 + curr_fps*0.05)
             tic = toc
-
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
         else:
             break
 
@@ -332,6 +320,7 @@ def main():
 
     # parse arguments
     args = parse_args()
+    print(args)
     video = args.video
 
     # set cv2 window
