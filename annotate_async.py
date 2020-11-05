@@ -12,6 +12,8 @@ from the parsed cctv video data.
 """
 
 # import tensorrt related libraries
+from os import write
+from numpy.lib.function_base import append
 import pycuda.driver as cuda
 import tensorrt as trt
 
@@ -23,6 +25,7 @@ import time
 import argparse
 import threading
 import numpy as np
+import pandas as pd
 
 # import custom libraries
 from utils.blur import blur_bboxes
@@ -71,6 +74,55 @@ def build_doors(cfg):
         doors.append(cur_door)
 
     return doors
+
+def postprocess_csv(raw_csv_name, file_name):
+    """
+    Perform postprocessing functions for raw csv file generated from annotation pipeline
+
+    1. Annotation is done on multiple frames per second level. Process to one annotation per second.
+    2. Make one annotation row per door instead of adding multiple doors info per annotation row.
+
+    Parameters
+    ----------
+    raw_csv_name : str
+                   Path of the raw csv file
+    """
+
+    if not os.path.isfile(raw_csv_name):
+        raise SystemExit("Given csv file - {:s} does not exist! Please check...".format(raw_csv_name))
+
+    print(raw_csv_name)
+
+    # read the csv file
+    raw_data = pd.read_csv(raw_csv_name)
+
+    # get the mean values of occupant count in each door from multiple annotations per seconds
+    # raw_data.groupby("Datetime", as_index=False).mean()
+    tranformed_df = raw_data.groupby('Datetime').mean().reset_index()
+    # apply ceil function to all occupancy values
+    door_names = list(tranformed_df.columns.values)[1:]
+    for door_name in door_names:
+        tranformed_df[door_name] = tranformed_df[door_name].apply(np.ceil).apply(np.int)
+
+    # container for curated infos
+    curated_annotations = []
+    # get doors count
+    doors_count = len(tranformed_df.columns) - 1
+    # for each annotation row, transform it to mutiple annotation rows
+    for _, row in tranformed_df.iterrows():
+        for door_id in range(doors_count):
+            curated_annotation = [row['Datetime']]
+            curated_annotation.append(door_id)
+            curated_annotation.append(row["DoorNo-{}".format(door_id)])    
+
+            curated_annotations.append(curated_annotation)
+
+    curated_dataframe = pd.DataFrame(curated_annotations)
+    # curated_dataframe.columns = curated_dataframe.iloc[0]
+    curated_dataframe.columns = ["Datetime", "Door No", "Occupancy"]
+    
+    write_file_name = "annotation/" + file_name
+    curated_dataframe.to_csv(write_file_name, sep=',')
 
 def visualize(image, preds, tracks, doors, stats, blur, fps):
     """
@@ -281,11 +333,20 @@ def track_annotate_and_display(condition, cfg, input_size, name):
     track_cfg = YamlParser(cfg.config_deepsort)
     deepsortcount = build_deepsortcount_tracker(cfg=track_cfg, doors=doors)
 
+    # prepare annotation container
     annotate_data = []
+    caption_row = ["Datetime"]
+
+    # Caption the doors according to doors count
+    for door_id in range(len(doors)):
+        caption_row.append("DoorNo-{}".format(door_id))
+    # Add Captions to the annotation csv
+    annotate_data.append(caption_row)
 
     _file_name = os.path.abspath(cfg.video).split("/")[-1].split('.')[0]
     video_name = _file_name + "_annotated.mp4"
-    annotation_name = _file_name + "_annotation.csv"
+    curated_name = _file_name + "_annotation.csv"
+    annotation_name = _file_name + "_annotation_raw.csv"
 
 
     # writer
@@ -309,8 +370,9 @@ def track_annotate_and_display(condition, cfg, input_size, name):
             frame_date          = results['date']
             frame_time          = results['time']
 
+            # Perform annotation process.
             if annotate_flag:
-                annotation = [frame_date, frame_time]
+                annotation = [frame_date + " " + frame_time]
                 for door_no in range(len(doors)):
                     annotation.append(stats.Doors[door_no])
 
@@ -334,7 +396,9 @@ def track_annotate_and_display(condition, cfg, input_size, name):
         with open("annotation/" + annotation_name, "w", encoding="utf=8") as WR:
             writer = csv.writer(WR)
             for row in annotate_data:
-                writer.writerow(row) 
+                writer.writerow(row)
+
+        postprocess_csv("annotation/" + annotation_name, curated_name)
 
 def main():
     """Main Thread
