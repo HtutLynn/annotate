@@ -98,7 +98,7 @@ def postprocess_csv(raw_csv_name, file_name):
 
     # get the mean values of occupant count in each door from multiple annotations per seconds
     # raw_data.groupby("Datetime", as_index=False).mean()
-    tranformed_df = raw_data.groupby('Datetime').mean().reset_index()
+    tranformed_df = raw_data.groupby('datetime').mean().reset_index()
     # apply ceil function to all occupancy values
     door_names = list(tranformed_df.columns.values)[1:]
     for door_name in door_names:
@@ -111,18 +111,18 @@ def postprocess_csv(raw_csv_name, file_name):
     # for each annotation row, transform it to mutiple annotation rows
     for _, row in tranformed_df.iterrows():
         for door_id in range(doors_count):
-            curated_annotation = [row['Datetime']]
+            curated_annotation = [row['datetime']]
             curated_annotation.append(door_id)
-            curated_annotation.append(row["DoorNo-{}".format(door_id)])    
+            curated_annotation.append(row["room_number_{}".format(door_id)])    
 
             curated_annotations.append(curated_annotation)
 
     curated_dataframe = pd.DataFrame(curated_annotations)
     # curated_dataframe.columns = curated_dataframe.iloc[0]
-    curated_dataframe.columns = ["Datetime", "Door No", "Occupancy"]
+    curated_dataframe.columns = ["datetime", "room_number", "occupancy"]
     
     write_file_name = "annotation/" + file_name
-    curated_dataframe.to_csv(write_file_name, sep=',')
+    curated_dataframe.to_csv(write_file_name, index=False, sep=',')
 
 def visualize(image, preds, tracks, doors, stats, blur, fps):
     """
@@ -335,11 +335,11 @@ def track_annotate_and_display(condition, cfg, input_size, name):
 
     # prepare annotation container
     annotate_data = []
-    caption_row = ["Datetime"]
+    caption_row = ["datetime"]
 
     # Caption the doors according to doors count
     for door_id in range(len(doors)):
-        caption_row.append("DoorNo-{}".format(door_id))
+        caption_row.append("room_number_{}".format(door_id))
     # Add Captions to the annotation csv
     annotate_data.append(caption_row)
 
