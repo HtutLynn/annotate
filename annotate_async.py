@@ -87,9 +87,8 @@ def postprocess_csv(raw_csv_name, file_name):
     """
 
     if not os.path.isfile(raw_csv_name):
+        print(raw_csv_name)
         raise SystemExit("Given csv file - {:s} does not exist! Please check...".format(raw_csv_name))
-
-    print(raw_csv_name)
 
     # read the csv file
     raw_data = pd.read_csv(raw_csv_name)
@@ -396,7 +395,7 @@ def track_annotate_and_display(condition, cfg, input_size, name):
             for row in annotate_data:
                 writer.writerow(row)
 
-        postprocess_csv("annotation/" + annotation_name, curated_name)
+        postprocess_csv(cfg.save_path + "/" + "annotations/" + annotation_name, curated_name)
 
 def main():
     """Main Thread
