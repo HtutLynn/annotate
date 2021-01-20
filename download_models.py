@@ -16,5 +16,8 @@ client.download(source="EfficientDet", dest=dest)
 # Download pytorch and ONNX model files for DeepSORT feature Extractor
 client.download(source="extractor", dest=dest)
 
-# Download pytorch and ONNX model files for YOLOv4
+# Download pytorch and ONNX model files for digits
 client.download(source="digits", dest=dest)
+
+# Download pytorch and ONNX model files for digits
+client.download(source="YOLOv4", dest=dest)
