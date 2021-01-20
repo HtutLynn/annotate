@@ -8,6 +8,7 @@ __pycache__/
 
 # output files from the pipeline run
 *.csv
+*.mp4
 
 # model files such as pytorch, tensorrt and onnx
 *.onnx
