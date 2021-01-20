@@ -7,7 +7,7 @@ from cascade import CascadeModel
 
 cuda.init()
 
-model = CascadeModel("trt/yolov4-416.trt", "trt/extractor.trt", 0.5, 0.5, 80)
+model = CascadeModel("checkpoints/trt/yolov4-416.trt", "checkpoints/trt/extractor.trt", 0.5, 0.5, 80)
 
 image = cv2.imread("sample/221.jpg")
 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)

@@ -6,7 +6,10 @@ from annotate_cascade import CascadeModel
 
 cuda.init()
 
-model = CascadeModel( "yolov4","trt/yolov4-416.trt", "trt/extractor.trt", "trt/digits.trt",0.5, 0.5)
+model = CascadeModel( "yolov4","checkpoints/trt/yolov4-416.trt", 
+                      "checkpoints/trt/extractor.trt", 
+                      "checkpoints/trt/digits.trt",
+                      0.5, 0.5)
 
 image = cv2.imread("sample/digits.png")
 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)

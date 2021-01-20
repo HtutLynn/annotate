@@ -217,7 +217,7 @@ class DigitRecognizer(object):
 
 if __name__ == "__main__":
     image = cv2.imread("sample/digits.png")
-    model = DigitRecognizer(engine_path="digits.trt", input_size=(28, 28), num_classes=10)
+    model = DigitRecognizer(engine_path="checkpoints/trt/digits.trt", input_size=(28, 28), num_classes=10)
 
 
     f_date, f_time = model.classify(img=image)

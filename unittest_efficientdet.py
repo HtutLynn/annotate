@@ -4,8 +4,8 @@ import pycuda.autoinit
 
 from efficientdet import EfficientDetModel
 
-model = EfficientDetModel(engine_path='checkpoints/efficientdet-b1.trt', nms_thres=0.5,
-                          conf_thres=0.3)
+model = EfficientDetModel(engine_path='checkpoints/trt/efficientdet-b1.trt', 
+                          nms_thres=0.5, conf_thres=0.3)
 
 image = cv2.imread("sample/221.jpg")
 

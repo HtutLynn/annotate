@@ -4,7 +4,7 @@ import time
 import pycuda.autoinit
 from yolo import TrtYOLOv4
 
-model = TrtYOLOv4(engine_path="trt/yolov4-416.trt", input_shape=(416, 416), nms_thres=0.5, conf_thres=0.5)
+model = TrtYOLOv4(engine_path="checkpoints/trt/yolov4-416.trt", input_shape=(416, 416), nms_thres=0.5, conf_thres=0.5)
 
 image = cv2.imread("sample/221.jpg")
 
