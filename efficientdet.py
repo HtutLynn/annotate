@@ -42,6 +42,7 @@ def _aspectaware_resize_padding(image, width, height, interpolation=None, means=
     padding_h     : int
                     height, of the image after padding
     """
+
     old_h, old_w, c = image.shape
     if old_w > old_h:
         new_w = width
@@ -50,10 +51,7 @@ def _aspectaware_resize_padding(image, width, height, interpolation=None, means=
         new_w = int(height / old_h * old_w)
         new_h = height
 
-    canvas = np.zeros((height, height, c), np.float32)
-    if means is not None:
-        canvas[...] = means
-
+    # resize the image by maintaining aspect ratio
     if new_w != old_w or new_h != old_h:
         if interpolation is None:
             image = cv2.resize(image, (new_w, new_h))
@@ -63,15 +61,10 @@ def _aspectaware_resize_padding(image, width, height, interpolation=None, means=
     padding_h = height - new_h
     padding_w = width - new_w
 
-    if c > 1:
-        canvas[:new_h, :new_w] = image
-    else:
-        if len(image.shape) == 2:
-            canvas[:new_h, :new_w, 0] = image
-        else:
-            canvas[:new_h, :new_w] = image
+    # pad the resized-contrast ratio maintained image to get desired dimensions
+    image = cv2.copyMakeBorder(image, 0, 0, padding_h, padding_w, cv2.BORDER_CONSTANT, value=means)
 
-    return canvas, new_w, new_h, old_w, old_h, padding_w, padding_h,
+    return image, new_w, new_h, old_w, old_h, padding_w, padding_h,
 
 def _preprocess(img, input_shape, mean=(0.406, 0.456, 0.485), std=(0.225, 0.224, 0.229)):
     """
