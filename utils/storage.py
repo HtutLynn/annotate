@@ -37,6 +37,30 @@ class BlobClient:
                 blob_path = prefix + dir_part + name
                 self.upload_file(file_path, blob_path)
 
+    def download(self, source, dest):
+        '''
+        Download a file or directory to a path on the local filesystem
+        '''
+        if not dest:
+            raise Exception('A destination must be provided')
+
+        blobs = self.ls_files(source, recursive=True)
+        if blobs:
+            # if source is a directory, dest must also be a directory
+            if not source == '' and not source.endswith('/'):
+                source += '/'
+            if not dest.endswith('/'):
+                dest += '/'
+            # append the directory name from source to the destination
+            dest += os.path.basename(os.path.normpath(source)) + '/'
+
+            blobs = [source + blob for blob in blobs]
+            for blob in blobs:
+                blob_dest = dest + os.path.relpath(blob, source)
+                self.download_file(blob, blob_dest)
+        else:
+            self.download_file(source, dest)
+
     def download_file(self, source: str, dest: str):
         '''
         Download a single file to a path on the local filesystem
