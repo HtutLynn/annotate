@@ -1,9 +1,7 @@
 from __future__ import print_function
-from os import stat
 from typing import List, Tuple, Union
 
 import cv2
-import time
 import numpy as np
 import os.path as ops
 import tensorrt as trt

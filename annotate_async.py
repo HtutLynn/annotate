@@ -12,8 +12,6 @@ from the parsed cctv video data.
 """
 
 # import tensorrt related libraries
-from os import write
-from numpy.lib.function_base import append
 import pycuda.driver as cuda
 import tensorrt as trt
 

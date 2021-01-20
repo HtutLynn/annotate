@@ -1,7 +1,5 @@
 # import tensorrt related libraries
-from sys import modules
 import pycuda.autoinit
-import tensorrt as trt
 
 # import system libraries
 import argparse

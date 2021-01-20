@@ -1,10 +1,5 @@
-from os import pread
-from numpy.core.defchararray import rsplit
-from numpy.lib.shape_base import expand_dims
-import onnx
 import onnxruntime
 import torch
-import cv2
 import sys
 import numpy as np
 

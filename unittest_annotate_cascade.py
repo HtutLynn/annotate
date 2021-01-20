@@ -1,4 +1,3 @@
-import numpy as np
 import cv2
 import pycuda.driver as cuda
 import time

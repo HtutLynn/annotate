@@ -11,7 +11,6 @@ would be improved comparing to the non-async version.
 
 # import tensorrt related libraries
 import pycuda.driver as cuda
-import tensorrt as trt
 
 # import system libraries
 import os

@@ -1,16 +1,13 @@
 from __future__ import print_function
-import re
 
 import cv2
 import time
 import numpy as np
 import os.path
 import tensorrt as trt
-from typing import Union
 
 import pycuda.autoinit
 import pycuda.driver as cuda
-from torch._C import dtype
 
 def _preprocess(image, width, height, interpolation=None):
     """

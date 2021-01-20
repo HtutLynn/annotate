@@ -1,15 +1,11 @@
 # convert efficientdet
 import sys
 import os
-
 import subprocess
-import argparse
-import time
 
 import numpy as np
 import cv2
 import torch
-import onnx
 import onnxruntime
 from torchvision.ops.boxes import batched_nms
 
