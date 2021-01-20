@@ -391,7 +391,7 @@ def track_annotate_and_display(condition, cfg, input_size, name):
             break
         
     if annotate_flag:
-        with open(cfg.save_path + "annotation/" + annotation_name, "w", encoding="utf=8") as WR:
+        with open(cfg.save_path + "/" + "annotations/" + annotation_name, "w", encoding="utf=8") as WR:
             writer = csv.writer(WR)
             for row in annotate_data:
                 writer.writerow(row)
