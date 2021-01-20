@@ -349,7 +349,7 @@ def track_annotate_and_display(condition, cfg, input_size, name):
 
     # writer
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-    path = cfg.save_path + video_name
+    path = cfg.save_path + "/videos/" + video_name
     writer = cv2.VideoWriter(path, fourcc, 20, (input_size[0], input_size[1]), True)
 
     fps = 0.0

@@ -189,7 +189,7 @@ class CascadePipeline(object):
 
         if self.record:
             fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-            path = cfg.save_path + "cascade_TensorRT_pipeline.mp4"
+            path = path = cfg.save_path + "/videos/" + "cascade_TensorRT_pipeline.mp4"
             self.writer = cv2.VideoWriter(path, fourcc, 20, (self.im_width, self.im_height), True)
 
     def _set_window(self, window_name, title):

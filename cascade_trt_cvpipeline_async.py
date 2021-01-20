@@ -275,7 +275,7 @@ def track_and_display(condition, cfg, input_size, name):
 
     # writer
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-    path = cfg.save_path + "cascade_TensorRT_async_pipeline.mp4"
+    path = path = cfg.save_path + "/videos/" + "cascade_TensorRT_async_pipeline.mp4"
     writer = cv2.VideoWriter(path, fourcc, 20, (input_size[0], input_size[1]), True)
 
     fps = 0.0
