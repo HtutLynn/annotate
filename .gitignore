@@ -15,6 +15,8 @@ __pycache__/
 *.pt
 *.pth
 *.trt
+*.weights
+*.cfg
 
 # C extensions
 *.so
