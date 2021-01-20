@@ -6,6 +6,15 @@ __pycache__/
 # VSCode configuration files
 .vscode/
 
+# output files from the pipeline run
+*.csv
+
+# model files such as pytorch, tensorrt and onnx
+*.onnx
+*.pt
+*.pth
+*.trt
+
 # C extensions
 *.so
 
