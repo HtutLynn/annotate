@@ -118,7 +118,7 @@ def postprocess_csv(raw_csv_name, file_name):
     # curated_dataframe.columns = curated_dataframe.iloc[0]
     curated_dataframe.columns = ["datetime", "room_number", "occupancy"]
     
-    write_file_name = "annotation/" + file_name
+    write_file_name = "outputs/annotations/" + file_name
     curated_dataframe.to_csv(write_file_name, index=False, sep=',')
 
 def visualize(image, preds, tracks, doors, stats, blur, fps):
