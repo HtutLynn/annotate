@@ -73,7 +73,7 @@ def build_doors(cfg):
 
     return doors
 
-def postprocess_csv(raw_csv_name, file_name):
+def postprocess_csv(raw_csv_name, file_name, parquet=True):
     """
     Perform postprocessing functions for raw csv file generated from annotation pipeline
 
@@ -120,6 +120,10 @@ def postprocess_csv(raw_csv_name, file_name):
     
     write_file_name = "outputs/annotations/" + file_name
     curated_dataframe.to_csv(write_file_name, index=False, sep=',')
+
+    if parquet:
+        parquet_file_name = "outputs/annotations/" + file_name.replace(".csv", ".parquet")
+        curated_dataframe.to_parquet(parquet_file_name)
 
 def visualize(image, preds, tracks, doors, stats, blur, fps):
     """
@@ -395,7 +399,7 @@ def track_annotate_and_display(condition, cfg, input_size, name):
             for row in annotate_data:
                 writer.writerow(row)
 
-        postprocess_csv(cfg.save_path + "/" + "annotations/" + annotation_name, curated_name)
+        postprocess_csv(cfg.save_path + "/" + "annotations/" + annotation_name, curated_name, parquet=True)
 
 def main():
     """Main Thread
